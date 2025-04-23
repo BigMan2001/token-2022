@@ -54,8 +54,22 @@ pub fn mint_split_proof_data(
         supply_elgamal_keypair.pubkey(),
         auditor_elgamal_pubkey,
     );
+
+
+
+    let (mint_amount_grouped_ciphertext_hi, mint_amount_opening_hi) = MintAmountCiphertext::new(
+        mint_amount_hi,
+        destination_elgamal_pubkey,
+        supply_elgamal_keypair.pubkey(),
+        auditor_elgamal_pubkey,
+    );
+    
     #[cfg(not(target_arch = "wasm32"))]
     let grouped_ciphertext_lo = mint_amount_grouped_ciphertext_lo.0;
+    
+    #[cfg(not(target_arch = "wasm32"))]
+    let grouped_ciphertext_hi = mint_amount_grouped_ciphertext_hi.0;
+    
     #[cfg(target_arch = "wasm32")]
     let grouped_ciphertext_lo = GroupedElGamalCiphertext3Handles::encryption_with_u64(
         destination_elgamal_pubkey,
@@ -64,6 +78,43 @@ pub fn mint_split_proof_data(
         mint_amount_lo,
         &mint_amount_opening_lo,
     );
+    
+    #[cfg(target_arch = "wasm32")]
+    let grouped_ciphertext_hi = GroupedElGamalCiphertext3Handles::encryption_with_u64(
+        destination_elgamal_pubkey,
+        supply_elgamal_keypair.pubkey(),
+        auditor_elgamal_pubkey,
+        mint_amount_hi,
+        &mint_amount_opening_hi,
+    );
+    
+    #[cfg(not(target_arch = "wasm32"))]
+    let validity_proof = BatchedGroupedCiphertext3HandlesValidityProofData::new(
+        destination_elgamal_pubkey,
+        supply_elgamal_keypair.pubkey(),
+        auditor_elgamal_pubkey,
+        &grouped_ciphertext_lo,
+        &grouped_ciphertext_hi,
+        mint_amount_lo,
+        mint_amount_hi,
+        &mint_amount_opening_lo,
+        &mint_amount_opening_hi,
+    ).map_err(TokenProofGenerationError::from)?;
+    
+    #[cfg(target_arch = "wasm32")]
+    let validity_proof = BatchedGroupedCiphertext3HandlesValidityProofData::new(
+        destination_elgamal_pubkey,
+        supply_elgamal_keypair.pubkey(),
+        auditor_elgamal_pubkey,
+        &grouped_ciphertext_lo,
+        &grouped_ciphertext_hi,
+        mint_amount_lo,
+        mint_amount_hi,
+        &mint_amount_opening_lo,
+        &mint_amount_opening_hi,
+    ).map_err(TokenProofGenerationError::from)?;
+
+
 
     let (mint_amount_grouped_ciphertext_hi, mint_amount_opening_hi) = MintAmountCiphertext::new(
         mint_amount_hi,

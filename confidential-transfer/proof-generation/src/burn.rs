@@ -48,15 +48,37 @@ pub fn burn_split_proof_data(
     let (burn_amount_lo, burn_amount_hi) = try_split_u64(burn_amount, BURN_AMOUNT_LO_BIT_LENGTH)
         .ok_or(TokenProofGenerationError::IllegalAmountBitLength)?;
 
-    // encrypt the burn amount under the source and auditor's ElGamal public key
+
     let (burn_amount_ciphertext_lo, burn_amount_opening_lo) = BurnAmountCiphertext::new(
         burn_amount_lo,
         source_elgamal_keypair.pubkey(),
         supply_elgamal_pubkey,
         auditor_elgamal_pubkey,
     );
+    
+    let (burn_amount_ciphertext_hi, burn_amount_opening_hi) = BurnAmountCiphertext::new(
+        burn_amount_hi,
+        source_elgamal_keypair.pubkey(),
+        supply_elgamal_pubkey,
+        auditor_elgamal_pubkey,
+    );
+    
+    
+    #[cfg(not(target_arch = "wasm32"))]
+    let grouped_ciphertext_hi = burn_amount_ciphertext_hi.0;
+    
+    #[cfg(target_arch = "wasm32")]
+    let grouped_ciphertext_hi = GroupedElGamalCiphertext3Handles::encryption_with_u64(
+        source_elgamal_keypair.pubkey(),
+        supply_elgamal_pubkey,
+        auditor_elgamal_pubkey,
+        burn_amount_hi,
+        &burn_amount_opening_hi,
+    );
+
     #[cfg(not(target_arch = "wasm32"))]
     let grouped_ciphertext_lo = burn_amount_ciphertext_lo.0;
+
     #[cfg(target_arch = "wasm32")]
     let grouped_ciphertext_lo = GroupedElGamalCiphertext3Handles::encryption_with_u64(
         source_elgamal_keypair.pubkey(),
@@ -66,22 +88,6 @@ pub fn burn_split_proof_data(
         &burn_amount_opening_lo,
     );
 
-    let (burn_amount_ciphertext_hi, burn_amount_opening_hi) = BurnAmountCiphertext::new(
-        burn_amount_hi,
-        source_elgamal_keypair.pubkey(),
-        supply_elgamal_pubkey,
-        auditor_elgamal_pubkey,
-    );
-    #[cfg(not(target_arch = "wasm32"))]
-    let grouped_ciphertext_hi = burn_amount_ciphertext_hi.0;
-    #[cfg(target_arch = "wasm32")]
-    let grouped_ciphertext_hi = GroupedElGamalCiphertext3Handles::encryption_with_u64(
-        source_elgamal_keypair.pubkey(),
-        supply_elgamal_pubkey,
-        auditor_elgamal_pubkey,
-        burn_amount_hi,
-        &burn_amount_opening_hi,
-    );
     // decrypt the current available balance at the source
     let current_decrypted_available_balance = current_decryptable_available_balance
         .decrypt(source_aes_key)

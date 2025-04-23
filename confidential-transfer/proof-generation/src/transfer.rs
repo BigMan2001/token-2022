@@ -31,7 +31,6 @@ pub struct TransferProofData {
         CiphertextValidityProofWithAuditorCiphertext,
     pub range_proof_data: BatchedRangeProofU128Data,
 }
-
 pub fn transfer_split_proof_data(
     current_available_balance: &ElGamalCiphertext,
     current_decryptable_available_balance: &AeCiphertext,
@@ -57,8 +56,21 @@ pub fn transfer_split_proof_data(
             destination_elgamal_pubkey,
             auditor_elgamal_pubkey,
         );
+
+    let (transfer_amount_grouped_ciphertext_hi, transfer_amount_opening_hi) =
+        TransferAmountCiphertext::new(
+            transfer_amount_hi,
+            source_elgamal_keypair.pubkey(),
+            destination_elgamal_pubkey,
+            auditor_elgamal_pubkey,
+        );
+
     #[cfg(not(target_arch = "wasm32"))]
     let grouped_ciphertext_lo = transfer_amount_grouped_ciphertext_lo.0;
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let grouped_ciphertext_hi = transfer_amount_grouped_ciphertext_hi.0;
+
     #[cfg(target_arch = "wasm32")]
     let grouped_ciphertext_lo = GroupedElGamalCiphertext3Handles::encryption_with_u64(
         source_elgamal_keypair.pubkey(),
@@ -68,15 +80,6 @@ pub fn transfer_split_proof_data(
         &transfer_amount_opening_lo,
     );
 
-    let (transfer_amount_grouped_ciphertext_hi, transfer_amount_opening_hi) =
-        TransferAmountCiphertext::new(
-            transfer_amount_hi,
-            source_elgamal_keypair.pubkey(),
-            destination_elgamal_pubkey,
-            auditor_elgamal_pubkey,
-        );
-    #[cfg(not(target_arch = "wasm32"))]
-    let grouped_ciphertext_hi = transfer_amount_grouped_ciphertext_hi.0;
     #[cfg(target_arch = "wasm32")]
     let grouped_ciphertext_hi = GroupedElGamalCiphertext3Handles::encryption_with_u64(
         source_elgamal_keypair.pubkey(),
@@ -99,7 +102,7 @@ pub fn transfer_split_proof_data(
     // Create a new Pedersen commitment for the remaining balance at the source
     let (new_available_balance_commitment, new_source_opening) =
         Pedersen::new(new_decrypted_available_balance);
-
+        
     // Compute the remaining balance at the source as ElGamal ciphertexts
     let transfer_amount_source_ciphertext_lo = transfer_amount_grouped_ciphertext_lo
         .0
