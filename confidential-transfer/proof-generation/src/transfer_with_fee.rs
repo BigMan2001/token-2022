@@ -150,6 +150,7 @@ pub fn transfer_with_fee_split_proof_data(
     .map_err(TokenProofGenerationError::from)?;
 
     // generate ciphertext validity data
+    #[cfg(not(target_arch = "wasm32"))]
     let transfer_amount_ciphertext_validity_proof_data =
         BatchedGroupedCiphertext3HandlesValidityProofData::new(
             source_elgamal_keypair.pubkey(),
@@ -161,8 +162,21 @@ pub fn transfer_with_fee_split_proof_data(
             transfer_amount_hi,
             &transfer_amount_opening_lo,
             &transfer_amount_opening_hi,
-        )
-        .map_err(TokenProofGenerationError::from)?;
+        ).map_err(TokenProofGenerationError::from)?;
+    
+    #[cfg(target_arch = "wasm32")]
+    let transfer_amount_ciphertext_validity_proof_data =
+        BatchedGroupedCiphertext3HandlesValidityProofData::new(
+            source_elgamal_keypair.pubkey(),
+            destination_elgamal_pubkey,
+            auditor_elgamal_pubkey,
+            &grouped_ciphertext_lo,
+            &grouped_ciphertext_hi,
+            transfer_amount_lo,
+            transfer_amount_hi,
+            &transfer_amount_opening_lo,
+            &transfer_amount_opening_hi,
+        ).map_err(TokenProofGenerationError::from)?;
 
     let transfer_amount_auditor_ciphertext_lo = transfer_amount_ciphertext_validity_proof_data
         .context_data()
