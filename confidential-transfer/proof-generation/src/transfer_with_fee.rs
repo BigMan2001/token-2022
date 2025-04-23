@@ -165,19 +165,37 @@ pub fn transfer_with_fee_split_proof_data(
         ).map_err(TokenProofGenerationError::from)?;
     
     #[cfg(target_arch = "wasm32")]
+    let grouped_ciphertext_lo = GroupedElGamalCiphertext3Handles::encryption_with_u64(
+        source_elgamal_keypair.pubkey(),
+        destination_elgamal_pubkey,
+        auditor_elgamal_pubkey,
+        transfer_amount_lo,
+        &transfer_amount_opening_lo,
+    );
+    
+    #[cfg(target_arch = "wasm32")]
+    let grouped_ciphertext_hi = GroupedElGamalCiphertext3Handles::encryption_with_u64(
+        source_elgamal_keypair.pubkey(),
+        destination_elgamal_pubkey,
+        auditor_elgamal_pubkey,
+        transfer_amount_hi,
+        &transfer_amount_opening_hi,
+    );
+    
+    #[cfg(target_arch = "wasm32")]
     let transfer_amount_ciphertext_validity_proof_data =
         BatchedGroupedCiphertext3HandlesValidityProofData::new(
             source_elgamal_keypair.pubkey(),
             destination_elgamal_pubkey,
             auditor_elgamal_pubkey,
-            &GroupedElGamalCiphertext3Handles(transfer_amount_grouped_ciphertext_lo.0.clone()),
-            &GroupedElGamalCiphertext3Handles(transfer_amount_grouped_ciphertext_hi.0.clone()),
+            &grouped_ciphertext_lo,
+            &grouped_ciphertext_hi,
             transfer_amount_lo,
             transfer_amount_hi,
             &transfer_amount_opening_lo,
             &transfer_amount_opening_hi,
         ).map_err(TokenProofGenerationError::from)?;
-
+        
     let transfer_amount_auditor_ciphertext_lo = transfer_amount_ciphertext_validity_proof_data
         .context_data()
         .grouped_ciphertext_lo
