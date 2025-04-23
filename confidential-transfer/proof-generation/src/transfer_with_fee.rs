@@ -77,7 +77,7 @@ pub fn transfer_with_fee_split_proof_data(
             auditor_elgamal_pubkey,
         );
     #[cfg(not(target_arch = "wasm32"))]
-    let grouped_ciphertext_lo = transfer_amount_grouped_ciphertext_lo.0;
+    let grouped_ciphertext_lo: solana_zk_sdk::encryption::grouped_elgamal::GroupedElGamalCiphertext<3> = transfer_amount_grouped_ciphertext_lo.0;
     #[cfg(target_arch = "wasm32")]
     let grouped_ciphertext_lo = GroupedElGamalCiphertext3Handles::encryption_with_u64(
         source_elgamal_keypair.pubkey(),

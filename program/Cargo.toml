@@ -36,13 +36,13 @@ solana-program-error = "2.2.1"
 solana-program-memory = "2.2.1"
 solana-program-option = "2.2.1"
 solana-program-pack = "2.2.1"
-solana-pubkey = "2.2.1"
+solana-pubkey = { version = "2.3.0", default-features = false }
 solana-rent = "2.2.1"
 solana-sdk-ids = "2.2.1"
 solana-security-txt = "1.1.1"
 solana-sysvar = "2.2.1"
 solana-system-interface = "1.0.0"
-solana-zk-sdk = "2.2.0"
+solana-zk-sdk = {git = "https://github.com/BigMan2001/agave", branch = "geyser_txn_accounts_data"}
 spl-elgamal-registry = { version = "0.2.0", path = "../confidential-transfer/elgamal-registry", features = ["no-entrypoint"] }
 spl-memo = { version = "6.0", features = ["no-entrypoint"] }
 spl-token = { version = "8.0", features = ["no-entrypoint"] }
@@ -68,7 +68,6 @@ serial_test = "3.2.0"
 solana-account = "2.2.1"
 solana-hash = "2.2.1"
 solana-keypair = "2.2.1"
-solana-program-test = "2.2.0"
 solana-signer = "2.2.1"
 solana-transaction = "2.2.1"
 solana-transaction-error = "2.2.1"
@@ -87,3 +86,6 @@ workspace = true
 
 [package.metadata.solana]
 program-id = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+[patch.crates-io]
+solana-pubkey = { git = "https://github.com/BigMan2001/agave", branch = "geyser_txn_accounts_data" }

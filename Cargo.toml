@@ -11,9 +11,6 @@ opt-level = 3
 [workspace]
 resolver = "2"
 members = [
-  "clients/cli",
-  #"clients/rust", omitted from workspace until a real client is generated
-  "clients/rust-legacy",
   "confidential-transfer/ciphertext-arithmetic",
   "confidential-transfer/elgamal-registry",
   "confidential-transfer/proof-extraction",
@@ -21,6 +18,7 @@ members = [
   "confidential-transfer/proof-tests",
   "program",
 ]
+
 
 [workspace.package]
 authors = ["Anza Maintainers <maintainers@anza.xyz>"]
@@ -52,3 +50,7 @@ config = "scripts/spellcheck.toml"
 pre-release-commit-message = "Publish {{crate_name}} v{{version}}"
 tag-message = "Publish {{crate_name}} v{{version}}"
 consolidate-commits = false
+
+[patch.crates-io]
+solana-account-decoder =  {git = "https://github.com/BigMan2001/agave",  branch = "geyser_txn_accounts_data"}
+solana-zk-sdk = { git = "https://github.com/BigMan2001/agave", branch = "geyser_txn_accounts_data" }
